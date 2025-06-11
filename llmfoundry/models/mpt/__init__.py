@@ -2,9 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from llmfoundry.models.mpt.configuration_mpt import MPTConfig
+from llmfoundry.models.mpt.configuration_mpt_mup import MPTMuPConfig
 from llmfoundry.models.mpt.modeling_mpt import (ComposerMPTCausalLM,
                                                 MPTForCausalLM, MPTModel,
                                                 MPTPreTrainedModel)
+from llmfoundry.models.mpt.modeling_mpt_mup import (MPTMuPModel,
+                                                    MPTMuPForCausalLM,
+                                                    ComposerMPTMuPCausalLM)
 
 __all__ = [
     'MPTPreTrainedModel',
@@ -12,4 +16,8 @@ __all__ = [
     'MPTForCausalLM',
     'ComposerMPTCausalLM',
     'MPTConfig',
+    'MPTMuPConfig',
+    'MPTMuPModel',
+    'MPTMuPForCausalLM',
+    'ComposerMPTMuPCausalLM',
 ]

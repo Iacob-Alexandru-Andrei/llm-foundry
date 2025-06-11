@@ -157,16 +157,28 @@ def build_algorithm(name: str, kwargs: Dict[str, Any]) -> Algorithm:
 
 def build_optimizer(model: torch.nn.Module, name: str,
                     optimizer_config: Dict[str, Any]) -> Optimizer:
+    param_groups = None
+    if hasattr(model, 'get_optimizer_param_groups'):
+        # model constructs its own parameter groups (e.g., for muP)
+        weight_decay = optimizer_config.get('weight_decay', 0.0)
+        param_groups = model.get_optimizer_param_groups(weight_decay)
+        optimizer_config = {
+            k: v
+            for k, v in optimizer_config.items() if k != 'weight_decay'
+        }
+    else:
+        param_groups = model.parameters()
+
     if name == 'decoupled_adamw':
-        return DecoupledAdamW(model.parameters(), **optimizer_config)
+        return DecoupledAdamW(param_groups, **optimizer_config)
     elif name == 'decoupled_lionw':
-        return DecoupledLionW(model.parameters(), **optimizer_config)
+        return DecoupledLionW(param_groups, **optimizer_config)
     elif name == 'clip_lion':
-        return DecoupledClipLion(model.parameters(), **optimizer_config)
+        return DecoupledClipLion(param_groups, **optimizer_config)
     elif name == 'adalr_lion':
-        return DecoupledAdaLRLion(model.parameters(), **optimizer_config)
+        return DecoupledAdaLRLion(param_groups, **optimizer_config)
     elif name == 'decoupled_lionw_8b':
-        return DecoupledLionW_8bit(model.parameters(), **optimizer_config)
+        return DecoupledLionW_8bit(param_groups, **optimizer_config)
     else:
         raise ValueError(f'Not sure how to build optimizer: {name}')
 
