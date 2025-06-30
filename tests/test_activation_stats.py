@@ -19,8 +19,20 @@ def test_aggregate_across_seeds():
     stds = [0.1, 0.2, 0.3]
     mean, err = stats_utils.aggregate_across_seeds(vals, stds)
     expected_mean = np.mean(vals)
-    expected_var = np.mean(np.square(stds)) / len(vals) + np.var(vals, ddof=1) / len(
-        vals
-    )
+    var_between = np.var(vals, ddof=1)
+    var_within = np.mean(np.square(stds))
+    expected_var = (max(var_between - var_within, 0.0) + var_within) / len(vals)
+    assert np.isclose(mean, expected_mean)
+    assert np.isclose(err, np.sqrt(expected_var))
+
+
+def test_aggregate_no_between_var():
+    vals = [1.0, 1.0, 1.0]
+    stds = [0.1, 0.2, 0.3]
+    mean, err = stats_utils.aggregate_across_seeds(vals, stds)
+    expected_mean = 1.0
+    var_between = np.var(vals, ddof=1)
+    var_within = np.mean(np.square(stds))
+    expected_var = (max(var_between - var_within, 0.0) + var_within) / len(vals)
     assert np.isclose(mean, expected_mean)
     assert np.isclose(err, np.sqrt(expected_var))

@@ -55,6 +55,7 @@ def aggregate_across_seeds(values, stds):
         return float("nan"), float("nan")
     mean_val = values.mean()
     var_between = values.var(ddof=1) if n > 1 else 0.0
-    var_within = np.mean(stds**2)
-    total_var = var_between / n + var_within / n
+    var_within = np.mean(stds ** 2)
+    between_var = max(var_between - var_within, 0.0)
+    total_var = (between_var + var_within) / n
     return mean_val, math.sqrt(total_var)
