@@ -32,7 +32,7 @@ import torch
 from model import GPT, GPTConfig
 from torch.distributed import destroy_process_group, init_process_group
 from torch.nn.parallel import DistributedDataParallel as DDP
-from parametrisation_examples.stats_utils import (
+from stats_utils import (
     init_layer_stats,
     update_layer_stats,
     finalize_layer_stats,
