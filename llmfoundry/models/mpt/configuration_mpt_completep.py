@@ -19,6 +19,7 @@ class MPTCompletePConfig(MPTMuPConfig):
         depth_multiplier: float = 1.0,
         depth_alpha_exp: float = 1.0,
         eps_scaling_enabled: bool = True,
+        peri_norm_enabled: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -26,3 +27,4 @@ class MPTCompletePConfig(MPTMuPConfig):
         self.depth_multiplier = depth_multiplier
         self.depth_alpha_exp = depth_alpha_exp
         self.eps_scaling_enabled = eps_scaling_enabled
+        self.peri_norm_enabled = peri_norm_enabled

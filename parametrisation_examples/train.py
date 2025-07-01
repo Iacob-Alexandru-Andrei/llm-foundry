@@ -112,6 +112,8 @@ mup_enable_coord_check_logging = False  # If True will track the output.abs().me
 depth_alpha_enabled = False
 depth_multiplier = 1.0
 depth_alpha_exp = 1.0
+eps_scaling_enabled = True
+peri_norm_enabled = False
 # seed
 seed = 1337
 # DDP settings
@@ -255,6 +257,8 @@ model_args = {
     "depth_alpha_enabled": depth_alpha_enabled,
     "depth_alpha_exp": depth_alpha_exp,
     "depth_multiplier": depth_multiplier,
+    "eps_scaling_enabled": eps_scaling_enabled,
+    "peri_norm_enabled": peri_norm_enabled,
     "tie_word_embeddings": tie_word_embeddings,
     "force_weight_tying": force_weight_tying,
 }  # start with model_args from command line
