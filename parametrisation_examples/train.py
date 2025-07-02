@@ -1,4 +1,4 @@
-# Copyright 2024 MosaicML LLM Foundry authors
+330# Copyright 2024 MosaicML LLM Foundry authors
 # SPDX-License-Identifier: Apache-2.0
 
 """Training script for nanoGPT examples.
@@ -113,7 +113,6 @@ depth_alpha_enabled = False
 depth_multiplier = 1.0
 depth_alpha_exp = 1.0
 eps_scaling_enabled = True
-peri_norm_enabled = False
 # seed
 seed = 1337
 # DDP settings
@@ -134,6 +133,7 @@ config_keys = [
     for k, v in globals().items()
     if not k.startswith("_") and isinstance(v, (int, float, bool, str))
 ]
+print(config_keys)
 exec(
     open("configurator.py").read(),
 )  # overrides from command line or config file
@@ -258,7 +258,6 @@ model_args = {
     "depth_alpha_exp": depth_alpha_exp,
     "depth_multiplier": depth_multiplier,
     "eps_scaling_enabled": eps_scaling_enabled,
-    "peri_norm_enabled": peri_norm_enabled,
     "tie_word_embeddings": tie_word_embeddings,
     "force_weight_tying": force_weight_tying,
 }  # start with model_args from command line

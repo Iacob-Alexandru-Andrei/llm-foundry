@@ -162,3 +162,4 @@ parametrisation_examples/**/*.bin
 parametrisation_examples/**/*.npy
 parametrisation_examples/**/*.pdf
 parametrisation_examples/**/out*
+*.out

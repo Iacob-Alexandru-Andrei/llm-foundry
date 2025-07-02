@@ -22,15 +22,8 @@ class MPTCompletePBlock(MPTBlock):
         depth_alpha_enabled: bool = False,
         depth_multiplier: float = 1.0,
         depth_alpha_exp: float = 1.0,
-        peri_norm_enabled: bool = False,
         **kwargs: Any,
     ) -> None:
-        self.peri_norm_enabled = peri_norm_enabled
-        if peri_norm_enabled:
-            attn_config = copy.deepcopy(kwargs.get('attn_config', {}))
-            attn_config['attn_type'] = 'perinorm_attention'
-            attn_config['peri_norm'] = True
-            kwargs['attn_config'] = attn_config
         super().__init__(**kwargs)
         self.residual_scaling = (
             1.0 /
@@ -76,7 +69,7 @@ class MPTCompletePBlock(MPTBlock):
             x = x + self.norm_attn_norm.resid_attn_dropout(
                 b,
             ) * self.residual_scaling
-            log.warning(
+            log.info(
                 f'CompletePBlock: residual scaling attention {self.residual_scaling:.4f}',
             )
             m = x
@@ -97,7 +90,7 @@ class MPTCompletePBlock(MPTBlock):
                 **extra_kwargs,
             )
             x = x + self.resid_attn_dropout(b) * self.residual_scaling
-            log.warning(
+            log.info(
                 f'CompletePBlock: residual scaling attention {self.residual_scaling:.4f}',
             )
             m = x
@@ -108,7 +101,7 @@ class MPTCompletePBlock(MPTBlock):
         x = x.to(device=n.device) + self.resid_ffn_dropout(n).to(
             device=n.device,
         ) * self.residual_scaling
-        log.warning(
+        log.info(
             f'CompletePBlock: residual scaling ffn {self.residual_scaling:.4f}',
         )
         return x, attn_weights, past_key_value

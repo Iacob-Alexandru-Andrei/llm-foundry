@@ -47,12 +47,12 @@ class MPTCompletePModel(MPTMuPModel):
             for n, p in param_dict.items():
                 if n.endswith('wte.weight') or n.endswith('wpe.weight'):
                     emb_params.append(p)
-                    log.warning(
+                    log.info(
                         f'Adding {n} to embedding group with lr: {lr:.6f}',
                     )
                 elif '.norm_' in n and not '.norm_f.' in n:
                     hidden_ln_params.append(p)
-                    log.warning(
+                    log.info(
                         f'Adding {n} to hidden layer norm group with lr: {lr * self.mup_cfg.depth_multiplier:.6f}',
                     )
                 elif n.endswith(
@@ -61,7 +61,7 @@ class MPTCompletePModel(MPTMuPModel):
                     'ffn.up_proj.weight',
                 ) or n.endswith('ffn.down_proj.weight'):
                     hidden_weight_params.append(p)
-                    log.warning(
+                    log.info(
                         f'Adding {n} to hidden weight group with lr: {lr * self.mup_cfg.mup_width_multiplier * self.mup_cfg.depth_multiplier:.6f}',
                     )
                 elif n.endswith(
@@ -70,16 +70,16 @@ class MPTCompletePModel(MPTMuPModel):
                     'ffn.up_proj.bias',
                 ) or n.endswith('ffn.down_proj.bias'):
                     hidden_bias_params.append(p)
-                    log.warning(
+                    log.info(
                         f'Adding {n} to hidden bias group with lr: {lr * self.mup_cfg.depth_multiplier:.6f}',
                     )
                 elif 'norm_f' in n:
                     final_ln_params.append(p)
-                    log.warning(
+                    log.info(
                         f'Adding {n} to final layer norm group with lr: {lr:.6f}',
                     )
                 else:
-                    log.warning(f'Unhandled parameter {n}')
+                    log.info(f'Unhandled parameter {n}')
             width_lr_scaling = 1 / self.mup_cfg.mup_width_multiplier
             depth_lr_scaling = self.mup_cfg.depth_multiplier**(
                 self.mup_cfg.depth_alpha_exp - 1
@@ -91,7 +91,7 @@ class MPTCompletePModel(MPTMuPModel):
                                     self.config.depth_multiplier
                                     **(-1 * self.config.depth_alpha_exp)
                                 )
-                log.warning(
+                log.info(
                     f"Using width_lr_scaling: {width_lr_scaling}, depth_lr_scaling: {depth_lr_scaling}, eps: {optimizer_config['eps']} scaled from {og_eps}",
                 )
             return [
