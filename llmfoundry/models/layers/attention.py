@@ -27,6 +27,7 @@ __all__ = [
     'MultiheadAttention',
     'MultiQueryAttention',
     'GroupedQueryAttention',
+    'PeriNormAttention',
     'attn_bias_shape',
     'build_attn_bias',
     'build_alibi_bias',
@@ -942,6 +943,43 @@ class MultiQueryAttention(GroupedQueryAttention):
             attn_logit_softcapping=attn_logit_softcapping,
             kv_dim=kv_dim,
         )
+
+
+@attention_classes.register_class('perinorm_attention')
+class PeriNormAttention(MultiheadAttention):
+    """Multi-head attention with optional Peri normalization."""
+
+    def __init__(self, *args: Any, peri_norm: bool = False, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.peri_norm = peri_norm
+        if peri_norm:
+            self.q_ln = nn.LayerNorm(self.head_dim)
+            self.k_ln = nn.LayerNorm(self.head_dim)
+            self.v_ln = nn.LayerNorm(self.head_dim)
+
+    def get_qkv(
+        self,
+        x: torch.Tensor,
+        prev_layer_key_value: Optional[tuple[torch.Tensor, torch.Tensor]] = None,
+        key_value_states: Optional[torch.Tensor] = None,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        query, key, value = super().get_qkv(
+            x,
+            prev_layer_key_value=prev_layer_key_value,
+            key_value_states=key_value_states,
+        )
+        if self.peri_norm:
+            b, s = query.shape[:2]
+            query = query.view(b, s, self.n_heads, self.head_dim)
+            key = key.view(b, s, self.kv_n_heads, self.head_dim)
+            value = value.view(b, s, self.kv_n_heads, self.head_dim)
+            query = self.q_ln(query)
+            key = self.k_ln(key)
+            value = self.v_ln(value)
+            query = query.view(b, s, -1)
+            key = key.view(b, s, -1)
+            value = value.view(b, s, -1)
+        return query, key, value
 
 
 def attn_bias_shape(

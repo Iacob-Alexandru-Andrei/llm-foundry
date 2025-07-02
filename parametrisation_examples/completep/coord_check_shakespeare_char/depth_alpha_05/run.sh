@@ -22,7 +22,7 @@ do
         --csv_log=True \
         --dataset='shakespeare_char' \
         --gradient_accumulation_steps=4 \
-        --batch_size=2 \
+        --batch_size=${bs} \
         --block_size=1024 \
         --n_layer=$depth \
         --n_head=$n_heads \

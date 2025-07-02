@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any, Optional
+import copy
 
 import torch
 
@@ -68,7 +69,7 @@ class MPTCompletePBlock(MPTBlock):
             x = x + self.norm_attn_norm.resid_attn_dropout(
                 b,
             ) * self.residual_scaling
-            log.warning(
+            log.info(
                 f'CompletePBlock: residual scaling attention {self.residual_scaling:.4f}',
             )
             m = x
@@ -89,7 +90,7 @@ class MPTCompletePBlock(MPTBlock):
                 **extra_kwargs,
             )
             x = x + self.resid_attn_dropout(b) * self.residual_scaling
-            log.warning(
+            log.info(
                 f'CompletePBlock: residual scaling attention {self.residual_scaling:.4f}',
             )
             m = x
@@ -100,7 +101,7 @@ class MPTCompletePBlock(MPTBlock):
         x = x.to(device=n.device) + self.resid_ffn_dropout(n).to(
             device=n.device,
         ) * self.residual_scaling
-        log.warning(
+        log.info(
             f'CompletePBlock: residual scaling ffn {self.residual_scaling:.4f}',
         )
         return x, attn_weights, past_key_value

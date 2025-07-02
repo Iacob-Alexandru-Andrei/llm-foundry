@@ -42,6 +42,8 @@ class MPTMuPModel(MPTModel):
             # End muP code
         self.mup_cfg = config
         if self.mup_cfg.mup_enabled:
+            # TODO(<Alex>): modify param_init_fn and reset_parameters to handle muP initialization, then use the same logic with the meta device
+            # as the base MPT model does.
             # Begin muP code: reinitialize weights following muP rules
             for name, param in self.named_parameters():
                 if name.endswith(
@@ -59,7 +61,7 @@ class MPTMuPModel(MPTModel):
                         mean=0.0,
                         std=muP_std,
                     )
-                    log.warning(
+                    log.info(
                         f'Initialized {name} with muP std: {muP_std:.4f}',
                     )
 
@@ -80,7 +82,7 @@ class MPTMuPModel(MPTModel):
                         mean=0.0,
                         std=muP_std,
                     )
-                    log.warning(
+                    log.info(
                         f'Initialized {name} with muP std: {muP_std:.4f}',
                     )
             # End muP code
@@ -110,17 +112,17 @@ class MPTMuPModel(MPTModel):
                         'ffn.up_proj.weight',
                     ) or n.endswith('ffn.down_proj.weight'):
                         mup_decay.append(p)
-                        log.warning(
+                        log.info(
                             f'Adding {n} to muP decay group with lr: {lr / self.mup_cfg.mup_width_multiplier:.6f}',
                         )
                     else:
                         decay.append(p)
-                        log.warning(
+                        log.info(
                             f'Adding {n} to decay group with lr: {lr:.6f}',
                         )
                 else:
                     nodecay.append(p)
-                    log.warning(
+                    log.info(
                         f'Adding {n} to no-decay group with lr: {lr:.6f}',
                     )
             return [
@@ -167,7 +169,7 @@ class MPTMuPModel(MPTModel):
                 self.mup_cfg.mup_output_alpha /
                 self.mup_cfg.mup_width_multiplier
             )
-            log.warning(
+            log.info(
                 f'Scaling output logits by {self.mup_cfg.mup_output_alpha / self.mup_cfg.mup_width_multiplier:.4f}',
             )
             # End muP code
