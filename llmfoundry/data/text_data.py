@@ -3,7 +3,9 @@
 """Build a StreamingTextDataset dataset and dataloader for training."""
 
 import inspect
+import logging
 from itertools import islice
+from os import environ
 from typing import (
     Any,
     Callable,
@@ -27,6 +29,8 @@ from llmfoundry.data.data import (
     stream_remote_local_validate,
 )
 from llmfoundry.utils.registry_utils import construct_from_registry
+
+log = logging.getLogger(__name__)
 
 __all__ = [
     'StreamingTextDataset',
@@ -141,10 +145,9 @@ class StreamingTextDataset(StreamingDataset):
         stream_config: Optional[dict[str, Any]] = None,
         **kwargs: Any,
     ):
-
         if token_encoding_type not in SUPPORTED_MDS_ENCODING_TYPES:
             raise ValueError(
-                f'The token_encoding_type must be one of {SUPPORTED_MDS_ENCODING_TYPES}, but got {token_encoding_type}',
+                f"The token_encoding_type must be one of {SUPPORTED_MDS_ENCODING_TYPES}, but got {token_encoding_type}",
             )
         self.token_encoding_type = token_encoding_type
 
@@ -193,6 +196,9 @@ class StreamingTextDataset(StreamingDataset):
         )
         self.tokenizer = tokenizer
         self.max_seq_len = max_seq_len
+        self.print_first_n_samples = int(
+            environ.get('PRINT_FIRST_N_SAMPLES', 5)
+        )
 
     # How to tokenize a text sample to a token sample
     def _tokenize(self, text_sample: Mapping) -> dict[str, list[int]]:
@@ -238,6 +244,16 @@ class StreamingTextDataset(StreamingDataset):
             raise RuntimeError(
                 'StreamingTextDataset needs samples to have a `text` or `tokens` column',
             )
+        if self.print_first_n_samples > 0:
+            if isinstance(token_sample, torch.Tensor):
+                log.info(
+                    f"Sample {idx} tokens: {token_sample[: self.print_first_n_samples]}",
+                )
+            else:
+                log.info(
+                    f"Sample {idx} tokens: {token_sample['input_ids'][: self.print_first_n_samples]}",
+                )
+            self.print_first_n_samples -= 1
         return token_sample
 
 
@@ -257,9 +273,10 @@ class ConcatenatedSequenceCollatorWrapper:
             )
         if (eos_token_id is not None) and (bos_token_id is not None):
             raise ValueError(
-                'Cannot use *both* EOS and BOS tokens for detecting sequence boundaries. ' +\
-                'Please supply `eos_token_id` if sequences end with an EOS token, or use ' +\
-                '`bos_token_id` if sequences start with a BOS token.',
+                'Cannot use *both* EOS and BOS tokens for detecting sequence boundaries. '
+                +
+                'Please supply `eos_token_id` if sequences end with an EOS token, or use '
+                + '`bos_token_id` if sequences start with a BOS token.',
             )
 
         if eos_token_id is None:
@@ -445,10 +462,10 @@ if __name__ == '__main__':
 
     if args.remote_path is not None:
         print(
-            f'Reading {args.split} split from {args.local_path} <- streamed from <- {args.remote_path}',
+            f"Reading {args.split} split from {args.local_path} <- streamed from <- {args.remote_path}",
         )
     else:
-        print(f'Reading {args.split} split from {args.local_path}')
+        print(f"Reading {args.split} split from {args.local_path}")
 
     cfg = {
         'dataset': {
@@ -479,12 +496,12 @@ if __name__ == '__main__':
 
     for batch_ix, batch in enumerate(islice(loader, 5)):
         print('\n')
-        print('#' * 20, f'Batch {batch_ix}', '#' * 20)
+        print('#' * 20, f"Batch {batch_ix}", '#' * 20)
         for k, v in batch.items():
             if isinstance(v, torch.Tensor):
                 print(k, v.shape, v.dtype)
             else:
                 print(k, v)
         for sample_ix, token_sample in enumerate(batch['input_ids']):
-            print('-' * 20, f' Sample {sample_ix} ', '-' * 20)
+            print('-' * 20, f" Sample {sample_ix} ", '-' * 20)
             print(tokenizer.decode(token_sample))
